@@ -14,7 +14,7 @@ npm run dev – Development server
 npm run preview – Production preview
 ## Cypress
 **Open Cypress:**
-npx cypress open
+npm run cypress:open
   
 **Run all tests:**
-npx cypress run
+npm run cypress:run

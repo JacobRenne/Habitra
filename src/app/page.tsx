@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Navbar } from "./_components/Navbar";
-import { HabitList } from "./_components/HabitList";
-import { PageLayout } from "./_components/PageLayout";
-import { Footer } from "./_components/Footer";
 import { useHabits } from "@/app/hooks/useHabits";
 import { getTodayDate } from "@/app/utils/date";
 import { splitHabitsByCompletionForDate } from "@/app/utils/habits";
+import { Navbar } from "@/components/Navbar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 
 export default function HomePage() {
   const { habits, history, toggleCompletionForDate } = useHabits();
@@ -19,70 +19,94 @@ export default function HomePage() {
     selectedDate,
   );
 
-  const totalActiveHabits = incomplete.length + completed.length;
-
-  function handleDateChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setSelectedDate(event.target.value);
-  }
-
   return (
-    <PageLayout>
+    <div className="bg-background min-h-screen">
       <Navbar />
 
-      {/* Right-side content column: main + footer */}
-      <div className="flex flex-1 flex-col">
-        <main className="flex-1 p-6">
-          <h1 className="mb-2 text-3xl font-bold">Today’s Habits</h1>
-          <p className="mb-6 text-gray-600">The new age habit tracker!</p>
+      <main className="container mx-auto max-w-2xl space-y-8 px-4 py-8">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row md:items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Today's Focus</h1>
+            <p className="text-muted-foreground">Manage your daily tasks.</p>
+          </div>
 
-          <section className="mb-6">
-            <h2 className="mb-1 font-semibold">Selected date</h2>
-            <label>
-              Date:{" "}
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                className="rounded border px-2 py-1"
-              />
-            </label>
-          </section>
-
-          <section className="mb-6">
-            <h2 className="mb-1 font-semibold">Summary</h2>
-            {totalActiveHabits === 0 ? (
-              <p>No habits existed on this date.</p>
-            ) : (
-              <p>
-                {completed.length} / {totalActiveHabits} habits completed on{" "}
-                {selectedDate}.
-              </p>
-            )}
-          </section>
-
-          <div className="space-y-8">
-            <HabitList
-              title="To Do"
-              habits={incomplete}
-              actionLabel="Mark done"
-              onActionClick={(habitId) =>
-                toggleCompletionForDate(habitId, selectedDate)
-              }
-            />
-
-            <HabitList
-              title="Completed"
-              habits={completed}
-              actionLabel="Undo"
-              onActionClick={(habitId) =>
-                toggleCompletionForDate(habitId, selectedDate)
-              }
+          <div className="w-auto md:w-auto">
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full"
             />
           </div>
-        </main>
+        </div>
 
-        <Footer />
-      </div>
-    </PageLayout>
+        <div className="space-y-4">
+          {incomplete.length === 0 && habits.length > 0 && (
+            <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
+              All habits completed for today!
+            </div>
+          )}
+
+          {incomplete.map((habit) => (
+            <Card key={habit.id}>
+              <CardContent className="flex items-center gap-4 p-4">
+                <Checkbox
+                  id={habit.id}
+                  checked={false}
+                  onCheckedChange={() =>
+                    toggleCompletionForDate(habit.id, selectedDate)
+                  }
+                  className="h-7 w-7 cursor-pointer"
+                />
+                <div className="grid gap-1">
+                  <label
+                    htmlFor={habit.id}
+                    className="cursor-pointer font-medium"
+                  >
+                    {habit.name}
+                  </label>
+                  {habit.description && (
+                    <p className="text-muted-foreground text-sm">
+                      {habit.description}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {completed.length > 0 && (
+          <div className="space-y-4 pt-4">
+            <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+              Completed
+            </h2>
+
+            {completed.map((habit) => (
+              <Card key={habit.id} className="bg-muted/40 opacity-60">
+                <CardContent className="flex items-center gap-4 p-4">
+                  <Checkbox
+                    id={habit.id}
+                    checked={true}
+                    onCheckedChange={() =>
+                      toggleCompletionForDate(habit.id, selectedDate)
+                    }
+                    className="h-7 w-7 cursor-pointer"
+                  />
+                  <div>
+                    <label
+                      htmlFor={habit.id}
+                      className="text-muted-foreground cursor-pointer font-medium line-through"
+                    >
+                      {habit.name}
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

@@ -2,108 +2,114 @@
 
 import { useState } from "react";
 import { useHabits } from "@/app/hooks/useHabits";
-import { Navbar } from "../_components/Navbar";
-import { PageLayout } from "../_components/PageLayout";
-import { Footer } from "../_components/Footer";
-import { Button } from "../_components/Button";
+import { Trash2, Plus } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 export default function PlannerPage() {
   const { habits, addHabit, deleteHabit } = useHabits();
-
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (!name) return;
     addHabit(name, description);
     setName("");
     setDescription("");
   }
 
   return (
-    <PageLayout>
+    <div className="bg-background min-h-screen">
       <Navbar />
 
-      <div className="flex flex-1 flex-col">
-        <main className="flex-1 p-6">
-          <h1 className="mb-2 text-3xl font-bold">Habit Planner</h1>
+      <main className="container mx-auto max-w-2xl space-y-8 px-4 py-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Planner</h1>
+          <p className="text-muted-foreground">
+            Create and manage your habits.
+          </p>
+        </div>
 
-          <section className="mb-6">
-            <h2 className="mb-2 font-semibold">Add habit</h2>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Name</label>
-                <input
+        <Card className="py-6">
+          <CardHeader>
+            <CardTitle>Add New Habit</CardTitle>
+            <CardDescription>What do you want to track daily?</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g. Drink Water"
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Drink water"
-                  className="w-full max-w-sm rounded border px-2 py-1"
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Description (optional)
-                </label>
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Input
+                  id="description"
+                  placeholder="e.g. 2 liters per day"
                   value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="8 glasses per day"
-                  className="w-full max-w-sm rounded border px-2 py-1"
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
 
-              <p className="text-sm text-gray-600">
-                For now, all habits are daily.
-              </p>
-
-              <Button type="submit" variant="primary">
-                Add habit
+              <Button type="submit" className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" /> Create Habit
               </Button>
             </form>
-          </section>
+          </CardContent>
+        </Card>
 
-          <section>
-            <h2 className="mb-2 font-semibold">Existing habits</h2>
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight">Your Habits</h2>
 
-            {habits.length === 0 ? (
-              <p className="text-sm text-gray-600">No habits yet.</p>
-            ) : (
-              <ul className="space-y-2 border-l-2 border-dashed border-gray-300 pl-2">
-                {habits.map((habit) => (
-                  <li
-                    key={habit.id}
-                    className="flex items-center justify-start gap-2"
-                  >
-                    <div>
-                      <strong>{habit.name}</strong>
+          {habits.length === 0 ? (
+            <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
+              No habits created yet. Use the form above to start!
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {habits.map((habit) => (
+                <Card key={habit.id}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="grid gap-1">
+                      <span className="font-medium">{habit.name}</span>
                       {habit.description && (
-                        <>
-                          {" "}
-                          -{" "}
-                          <span className="text-sm text-gray-600">
-                            {habit.description}
-                          </span>
-                        </>
+                        <p className="text-muted-foreground text-sm">
+                          {habit.description}
+                        </p>
                       )}
                     </div>
 
                     <Button
-                      type="button"
-                      variant="danger"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => deleteHabit(habit.id)}
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     >
-                      Delete
+                      <Trash2 className="h-5 w-5" />
                     </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </main>
-
-        <Footer />
-      </div>
-    </PageLayout>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

@@ -16,16 +16,45 @@ import {
 } from "@/components/ui/card";
 
 export default function PlannerPage() {
-  const { habits, addHabit, deleteHabit } = useHabits();
+  const { habits, addHabit, deleteHabit, loading, error, refetch } =
+    useHabits();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!name) return;
-    addHabit(name, description);
-    setName("");
-    setDescription("");
+    if (!name.trim()) return;
+    setSubmitting(true);
+    setActionError(null);
+
+    try {
+      const ok = await addHabit(name.trim(), description.trim() || undefined);
+      if (!ok) {
+        setActionError("Failed to create habit. Make sure you're signed in.");
+      } else {
+        setName("");
+        setDescription("");
+      }
+      await refetch();
+    } catch (err) {
+      console.error("Add habit error", err);
+      setActionError("Failed to create habit (network error).");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this habit? This will remove its completion history."))
+      return;
+    const ok = await deleteHabit(id);
+    if (!ok) {
+      setActionError("Failed to delete habit.");
+    } else {
+      await refetch();
+    }
   }
 
   return (
@@ -67,9 +96,18 @@ export default function PlannerPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" /> Create Habit
+              <Button
+                type="submit"
+                className="w-full sm:w-auto"
+                disabled={submitting}
+              >
+                <Plus className="mr-2 h-4 w-4" />{" "}
+                {submitting ? "Creating..." : "Create Habit"}
               </Button>
+
+              {actionError && (
+                <div className="text-sm text-red-600">{actionError}</div>
+              )}
             </form>
           </CardContent>
         </Card>
@@ -77,7 +115,21 @@ export default function PlannerPage() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold tracking-tight">Your Habits</h2>
 
-          {habits.length === 0 ? (
+          {loading && (
+            <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
+              Loading…
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+              {typeof error === "string"
+                ? error
+                : "An error occurred while loading habits."}
+            </div>
+          )}
+
+          {habits.length === 0 && !loading ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
               No habits created yet. Use the form above to start!
             </div>
@@ -98,7 +150,7 @@ export default function PlannerPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => deleteHabit(habit.id)}
+                      onClick={() => handleDelete(habit.id)}
                       className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-5 w-5" />

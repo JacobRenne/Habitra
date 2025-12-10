@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+}
+
+model Habit {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  name        String
+  description String?
+  
+  // Stored as a date only for easier querying
+  startDate   DateTime @default(now()) @db.Date
+
+  frequency   Frequency @default(DAILY)
+  weekDays    Int[]
+
+  // References the Supabase Auth user ID
+  userId      String
+
+  logs        HabitLog[]
+
+  @@index([userId])
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  
+  // Just the date "2023-10-25"
+  date      DateTime @db.Date 
+  
+  // Precise time "2023-10-25 14:30:05"
+  createdAt DateTime @default(now())
+  
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  // Still ensures only 1 log a day but can still store exact time
+  @@unique([habitId, date]) 
+  @@index([habitId])
+}

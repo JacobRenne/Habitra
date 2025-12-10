@@ -10,14 +10,30 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
 export default function HomePage() {
-  const { habits, history, toggleCompletionForDate } = useHabits();
+  const { habits, history, toggleCompletionForDate, loading, error, refetch } =
+    useHabits();
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
+  const [isToggling, setIsToggling] = useState<string | null>(null);
 
   const { incomplete, completed } = splitHabitsByCompletionForDate(
     habits,
     history,
     selectedDate,
   );
+
+  async function handleToggle(habitId: string) {
+    // prevent double toggles for the same habit
+    if (isToggling) return;
+    setIsToggling(habitId);
+    try {
+      await toggleCompletionForDate(habitId, selectedDate);
+      await refetch();
+    } catch (err) {
+      console.error("Toggle failed", err);
+    } finally {
+      setIsToggling(null);
+    }
+  }
 
   return (
     <div className="bg-background min-h-screen">
@@ -40,6 +56,20 @@ export default function HomePage() {
           </div>
         </div>
 
+        {loading && (
+          <div className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
+            Loading habits...
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-center text-sm text-red-700">
+            {typeof error === "string"
+              ? error
+              : "An error occurred while loading habits."}
+          </div>
+        )}
+
         <div className="space-y-4">
           {incomplete.length === 0 && habits.length > 0 && (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center">
@@ -53,9 +83,10 @@ export default function HomePage() {
                 <Checkbox
                   id={habit.id}
                   checked={false}
-                  onCheckedChange={() =>
-                    toggleCompletionForDate(habit.id, selectedDate)
-                  }
+                  onCheckedChange={(val) => {
+                    const checked = val === true;
+                    void handleToggle(habit.id);
+                  }}
                   className="h-7 w-7 cursor-pointer"
                 />
                 <div className="grid gap-1">
@@ -88,9 +119,9 @@ export default function HomePage() {
                   <Checkbox
                     id={habit.id}
                     checked={true}
-                    onCheckedChange={() =>
-                      toggleCompletionForDate(habit.id, selectedDate)
-                    }
+                    onCheckedChange={(val) => {
+                      void handleToggle(habit.id);
+                    }}
                     className="h-7 w-7 cursor-pointer"
                   />
                   <div>

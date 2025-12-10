@@ -1,39 +1,36 @@
-import type { Habit, HabitHistory } from "@/app/types/habit";
+import type { Habit, HabitLog } from "@/app/types/habit";
 
 export function isHabitActiveOnDate(habit: Habit, date: string): boolean {
-  const created = new Date(habit.createdAt);
-  const selected = new Date(date);
+  const start = (habit.startDate ?? habit.createdAt?.slice(0, 10)) as string;
+  return start <= date;
+}
 
-  return selected >= created;
+export function isHabitCompletedOnDate(
+  habitId: string,
+  date: string,
+  history: HabitLog[],
+): boolean {
+  return history.some(
+    (entry) => entry.habitId === habitId && entry.date === date,
+  );
 }
 
 export function splitHabitsByCompletionForDate(
   habits: Habit[],
-  history: HabitHistory[],
+  history: HabitLog[],
   date: string,
-): {
-  incomplete: Habit[];
-  completed: Habit[];
-} {
+): { incomplete: Habit[]; completed: Habit[] } {
   const completedIds = new Set(
-    history
-      .filter((entry) => entry.date === date)
-      .map((entry) => entry.habitId),
+    history.filter((h) => h.date === date).map((h) => h.habitId),
   );
 
   const incomplete: Habit[] = [];
   const completed: Habit[] = [];
 
   for (const habit of habits) {
-    if (!isHabitActiveOnDate(habit, date)) {
-      continue;
-    }
-
-    if (completedIds.has(habit.id)) {
-      completed.push(habit);
-    } else {
-      incomplete.push(habit);
-    }
+    if (!isHabitActiveOnDate(habit, date)) continue;
+    if (completedIds.has(habit.id)) completed.push(habit);
+    else incomplete.push(habit);
   }
 
   return { incomplete, completed };

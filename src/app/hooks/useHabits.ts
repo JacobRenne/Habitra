@@ -1,110 +1,131 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import type { Habit, HabitHistory } from "@/app/types/habit";
-import { getTodayDate } from "../utils/date";
+import type { Habit as HabitType, HabitLog } from "@/app/types/habit";
+import { apiFetch } from "@/lib/apiFetch";
 
-const HABITS_STORAGE_KEY = "habitra_habits";
-const HISTORY_STORAGE_KEY = "habitra_history";
-
-function loadHabitsFromStorage(): Habit[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem(HABITS_STORAGE_KEY);
-  if (!raw) return [];
-
-  const parsed: unknown = JSON.parse(raw);
-  if (Array.isArray(parsed)) {
-    return parsed as Habit[];
-  }
-
-  return [];
-}
-
-function saveHabitsToStorage(habits: Habit[]): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
-}
-
-function loadHistoryFromStorage(): HabitHistory[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const raw = window.localStorage.getItem(HISTORY_STORAGE_KEY);
-  if (!raw) return [];
-
-  const parsed: unknown = JSON.parse(raw);
-  if (Array.isArray(parsed)) {
-    return parsed as HabitHistory[];
-  }
-
-  return [];
-}
-
-function saveHistoryToStorage(history: HabitHistory[]): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
-}
+type ServerHabit = {
+  id: string;
+  name: string;
+  description?: string | null;
+  frequency?: { type: "daily" | "weekly"; weekDays?: number[] } | null;
+  startDate?: string | null; // "YYYY-MM-DD"
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  logs?: { id: string; date: string }[] | null;
+  userId?: string;
+};
 
 export function useHabits() {
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [history, setHistory] = useState<HabitHistory[]>([]);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const [habits, setHabits] = useState<HabitType[]>([]);
+  const [history, setHistory] = useState<HabitLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function fetchAll() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await apiFetch("/api/habits"); // apiFetch sends the token
+      if (!res.ok) {
+        // helpful debug message for dev
+        const text = await res.text();
+        setError(`Failed to fetch habits: ${res.status} ${text}`);
+        setHabits([]);
+        setHistory([]);
+        setLoading(false);
+        return;
+      }
+
+      const data: ServerHabit[] = await res.json();
+
+      const mappedHabits: HabitType[] = data.map((h) => ({
+        id: h.id,
+        name: h.name,
+        description: h.description ?? undefined,
+        // map frequency
+        frequency:
+          h.frequency?.type === "weekly"
+            ? { type: "weekly", days: (h.frequency.weekDays ?? []) as any }
+            : { type: "daily" },
+        // prefer server startDate then createdAt for 'start'
+        startDate:
+          h.startDate ??
+          (h.createdAt
+            ? h.createdAt.slice(0, 10)
+            : new Date().toISOString().slice(0, 10)),
+        createdAt: h.createdAt ?? new Date().toISOString(),
+        updatedAt: h.updatedAt ?? undefined,
+        userId: h.userId ?? undefined,
+        weekDays: h.frequency?.weekDays ?? undefined,
+      }));
+
+      const mappedHistory: HabitLog[] = data.flatMap((h) =>
+        (h.logs || []).map((l) => ({ id: l.id, habitId: h.id, date: l.date })),
+      );
+
+      setHabits(mappedHabits);
+      setHistory(mappedHistory);
+    } catch (err) {
+      setError(String(err));
+      setHabits([]);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const loaded = loadHabitsFromStorage();
-    const loadedHistory = loadHistoryFromStorage();
-    setHabits(loaded);
-    setHistory(loadedHistory);
-    setHasLoaded(true);
+    void fetchAll();
   }, []);
 
-  useEffect(() => {
-    if (!hasLoaded) return;
-    saveHabitsToStorage(habits);
-    saveHistoryToStorage(history);
-  }, [habits, history, hasLoaded]);
-
-  function addHabit(name: string, description?: string) {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-
-    const newHabit: Habit = {
-      id: crypto.randomUUID(),
-      name: trimmed,
-      description: description?.trim() ?? undefined,
-      frequency: { type: "daily" },
-      createdAt: getTodayDate(),
-    };
-
-    setHabits((previous) => [...previous, newHabit]);
-  }
-
-  function deleteHabit(id: string) {
-    setHabits((previous) => previous.filter((habit) => habit.id !== id));
-    setHistory((previous) => previous.filter((entry) => entry.habitId !== id));
-  }
-
-  function toggleCompletionForDate(habitId: string, date: string) {
-    setHistory((previous) => {
-      const exists = previous.some(
-        (entry) => entry.habitId === habitId && entry.date === date,
-      );
-      if (exists) {
-        return previous.filter(
-          (entry) => !(entry.habitId === habitId && entry.date === date),
-        );
-      }
-      return [...previous, { habitId, date }];
+  async function addHabit(name: string, description?: string) {
+    const body = { name, description, frequency: "daily" };
+    const res = await apiFetch("/api/habits", {
+      method: "POST",
+      body: JSON.stringify(body),
     });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("addHabit failed:", res.status, text);
+      return false;
+    }
+    await fetchAll();
+    return true;
+  }
+
+  async function deleteHabit(id: string) {
+    const res = await apiFetch(`/api/habits/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      console.error("deleteHabit failed", res.status, await res.text());
+      return false;
+    }
+    await fetchAll();
+    return true;
+  }
+
+  async function toggleCompletionForDate(habitId: string, date: string) {
+    const res = await apiFetch(`/api/habits/${habitId}/toggle`, {
+      method: "POST",
+      body: JSON.stringify({ date }),
+    });
+    if (!res.ok) {
+      console.error("toggle failed", res.status, await res.text());
+      return false;
+    }
+    await fetchAll();
+    return true;
   }
 
   return {
     habits,
     history,
+    loading,
+    error,
     addHabit,
     deleteHabit,
     toggleCompletionForDate,
+    refetch: fetchAll,
   };
 }

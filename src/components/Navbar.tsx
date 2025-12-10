@@ -2,12 +2,59 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from "@/lib/utils";
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import type { Session } from "@supabase/supabase-js";
+
+function extractSession(result: unknown): Session | null {
+  const anyResult: any = result;
+  const rawData = anyResult?.data;
+  if (rawData && typeof rawData === "object") {
+    if ("session" in rawData) return rawData.session as Session | null;
+    return rawData as Session | null;
+  }
+  if (anyResult && typeof anyResult === "object" && "user" in anyResult) {
+    return anyResult as Session;
+  }
+  return null;
+}
 
 export function Navbar() {
   const pathname = usePathname();
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function init() {
+      try {
+        const result = await supabase.auth.getSession();
+        if (!mounted) return;
+        setSession(extractSession(result));
+      } catch (err) {
+        console.warn("Navbar getSession error", err);
+        if (mounted) setSession(null);
+      }
+    }
+    void init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, state) => {
+      try {
+        setSession(extractSession(state));
+      } catch (e) {
+        console.warn("Navbar onAuthStateChange error", e);
+        setSession(null);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      sub?.subscription?.unsubscribe?.();
+    };
+  }, []);
 
   return (
     <nav className="bg-background border-b">
@@ -42,6 +89,30 @@ export function Navbar() {
             >
               Planner
             </Link>
+
+            {!session ? (
+              <Link
+                href="/signup"
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  "bg-transparent",
+                  pathname === "/signup" && "bg-accent text-accent-foreground",
+                )}
+              >
+                Sign up
+              </Link>
+            ) : (
+              <Link
+                href="/account"
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  "bg-transparent",
+                  pathname === "/account" && "bg-accent text-accent-foreground",
+                )}
+              >
+                Account
+              </Link>
+            )}
           </div>
 
           <ModeToggle />

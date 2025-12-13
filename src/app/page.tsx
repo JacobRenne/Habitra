@@ -86,6 +86,7 @@ export default function HomePage() {
                 <CardContent className="flex items-center gap-4 p-4">
                   <Checkbox
                     id={habit.id}
+                    data-testid={`habit-checkbox-${habit.id}`}
                     checked={false}
                     onCheckedChange={(val) => {
                       const checked = val === true;
@@ -122,6 +123,7 @@ export default function HomePage() {
                   <CardContent className="flex items-center gap-4 p-4">
                     <Checkbox
                       id={habit.id}
+                      data-testid={`habit-checkbox-${habit.id}`}
                       checked={true}
                       onCheckedChange={(val) => {
                         void handleToggle(habit.id);

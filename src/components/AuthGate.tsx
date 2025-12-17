@@ -11,21 +11,23 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
+
   const router = useRouter();
 
+  // Mount check
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Do not render utnil mount
-  if (!mounted) return null;
-
-  // Cypress bypass
-  if ((window as any).Cypress) {
-    return <>{children}</>;
-  }
-
+  // Auth logic
   useEffect(() => {
+    // Cypress bypasses auth gate
+    if (typeof window !== "undefined" && (window as any).Cypress) {
+      setSession({} as Session);
+      setLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function init() {
@@ -48,6 +50,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
       sub?.subscription.unsubscribe();
     };
   }, [router]);
+
+  if (!mounted) return null;
 
   if (loading) {
     return <div className="p-6 text-center">Checking auth…</div>;

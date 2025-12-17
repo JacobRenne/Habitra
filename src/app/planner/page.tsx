@@ -156,6 +156,7 @@ export default function PlannerPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        data-testid={`habit-delete-${habit.id}`}
                         onClick={() => handleDelete(habit.id)}
                         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       >

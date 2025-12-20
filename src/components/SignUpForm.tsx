@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function SignUpForm() {
   const [email, setEmail] = useState("");
@@ -14,7 +24,7 @@ export function SignUpForm() {
     setLoading(true);
     setMessage(null);
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -26,43 +36,50 @@ export function SignUpForm() {
       return;
     }
 
-    setMessage(
-      "Sign-up successful. Check your email to confirm (if required).",
-    );
+    setMessage("Account created. Check your email to confirm if required.");
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <div>
-        <label className="block text-sm font-medium">Email</label>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-2 py-1"
-        />
-      </div>
+    <Card>
+      <div className="py-4">
+        <CardHeader>
+          <CardTitle>Create account</CardTitle>
+          <CardDescription>
+            Sign up to start tracking your habits.
+          </CardDescription>
+        </CardHeader>
 
-      <div>
-        <label className="block text-sm font-medium">Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded border px-2 py-1"
-        />
-      </div>
+        <CardContent className="pt-2">
+          <form onSubmit={handleSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="signup-email">Email</Label>
+              <Input
+                id="signup-email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-      <div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-blue-500 px-3 py-1 text-white"
-        >
-          {loading ? "Signing up..." : "Sign up"}
-        </button>
-      </div>
+            <div className="grid gap-2">
+              <Label htmlFor="signup-password">Password</Label>
+              <Input
+                id="signup-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-      {message && <div className="text-sm text-gray-700">{message}</div>}
-    </form>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Signing up..." : "Sign up"}
+            </Button>
+
+            {message && (
+              <p className="text-muted-foreground text-sm">{message}</p>
+            )}
+          </form>
+        </CardContent>
+      </div>
+    </Card>
   );
 }

@@ -17,7 +17,7 @@ describe("Planner page", () => {
 
     cy.contains("Read a book").should("exist");
 
-    cy.get('[data-testid="habit-delete-habit-1"]').click();
+    cy.get('[data-testid="habit-delete-1"]').click();
 
     cy.wait("@deleteHabit");
     cy.wait("@getHabits");

@@ -7,17 +7,17 @@ export type DayOfWeek =
   | "saturday"
   | "sunday";
 
-export type HabitFrequency =
-  | { type: "daily" }
-  | { type: "weekly"; days: DayOfWeek[] };
+export type HabitFrequency = "daily" | "weekly";
 
 export interface Habit {
   id: string;
   name: string;
   description?: string;
   startDate: string; // YYYY-MM-DD
+
   frequency: HabitFrequency;
-  weekDays?: number[]; // 0..6 mapping for Mon..Sun (optional)
+  weekDays: number[]; // always exists, empty if daily
+
   createdAt: string;
   updatedAt?: string;
   userId?: string;

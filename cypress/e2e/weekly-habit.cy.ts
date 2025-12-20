@@ -5,7 +5,7 @@ describe("Weekly habits (future feature)", () => {
     // Monday = 1
     cy.intercept("GET", "/api/habits", {
       statusCode: 200,
-      body: weeklyHabit([1]),
+      body: weeklyHabit([0]),
     }).as("getHabits");
 
     cy.visit("/");

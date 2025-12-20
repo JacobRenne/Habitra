@@ -4,8 +4,9 @@ import { getUserIdFromRequest } from "@/lib/getUserIdFromRequest";
 
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
-  if (!userId)
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const habits = await prisma.habit.findMany({
     where: { userId },
@@ -17,12 +18,13 @@ export async function GET(req: NextRequest) {
     id: h.id,
     name: h.name,
     description: h.description ?? undefined,
-    frequency: {
-      type: h.frequency === "DAILY" ? "daily" : "weekly",
-      weekDays: h.weekDays ?? [],
-    },
+
+    frequency: h.frequency === "DAILY" ? "daily" : "weekly",
+    weekDays: h.weekDays ?? [],
+
     startDate: h.startDate.toISOString().slice(0, 10),
     createdAt: h.createdAt.toISOString(),
+
     logs: (h.logs ?? []).map((l) => ({
       id: l.id,
       date: l.date.toISOString().slice(0, 10),
@@ -34,8 +36,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
-  if (!userId)
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const body = await req.json();
   const {
@@ -67,10 +70,8 @@ export async function POST(req: NextRequest) {
     id: created.id,
     name: created.name,
     description: created.description ?? undefined,
-    frequency: {
-      type: created.frequency === "DAILY" ? "daily" : "weekly",
-      weekDays: created.weekDays ?? [],
-    },
+    frequency: created.frequency === "DAILY" ? "daily" : "weekly",
+    weekDays: created.weekDays ?? [],
     startDate: created.startDate.toISOString().slice(0, 10),
     createdAt: created.createdAt.toISOString(),
   };

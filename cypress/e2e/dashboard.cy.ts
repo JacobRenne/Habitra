@@ -15,7 +15,7 @@ describe("Dashboard habits", () => {
     mockToggleHabit();
     mockHabitsAfter();
 
-    cy.get('[data-testid="habit-checkbox-habit-1"]').click();
+    cy.get('[data-testid="habit-checkbox-1"]').click();
 
     cy.wait("@toggleHabit");
     cy.wait("@getHabitsAfter");

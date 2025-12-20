@@ -2,7 +2,7 @@ import { todayISO } from "./today";
 
 export const habitsAfterAdd = [
   {
-    id: "habit-1",
+    id: "1",
     name: "Read a book",
     description: null,
     frequency: { type: "daily" },

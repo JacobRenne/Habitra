@@ -1,13 +1,21 @@
-import { AuthGate } from "@/components/AuthGate";
-import { Navbar } from "@/components/Navbar";
+"use client";
 
-export default function AccountPage() {
+import { SignInForm } from "@/components/SignInForm";
+import { SignUpForm } from "@/components/SignUpForm";
+
+export default function AuthPage() {
   return (
-    <AuthGate>
-      <div className="bg-background min-h-screen">
-        <Navbar />
-        <h1>This is a placeholder page</h1>
-      </div>
-    </AuthGate>
+    <div className="bg-background min-h-screen">
+      <main className="container mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-16">
+        <h1 className="mb-8 text-3xl font-bold tracking-tight">
+          Welcome to Habitra
+        </h1>
+
+        <div className="grid w-full gap-6 md:grid-cols-2">
+          <SignUpForm />
+          <SignInForm />
+        </div>
+      </main>
+    </div>
   );
 }

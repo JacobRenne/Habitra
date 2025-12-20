@@ -8,8 +8,9 @@ type ServerHabit = {
   id: string;
   name: string;
   description?: string | null;
-  frequency?: { type: "daily" | "weekly"; weekDays?: number[] } | null;
-  startDate?: string | null; // "YYYY-MM-DD"
+  frequency: "daily" | "weekly";
+  weekDays: number[];
+  startDate?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   logs?: { id: string; date: string }[] | null;
@@ -44,12 +45,8 @@ export function useHabits() {
         id: h.id,
         name: h.name,
         description: h.description ?? undefined,
-        // map frequency
-        frequency:
-          h.frequency?.type === "weekly"
-            ? { type: "weekly", days: (h.frequency.weekDays ?? []) as any }
-            : { type: "daily" },
-        // prefer server startDate then createdAt for 'start'
+        frequency: h.frequency,
+        weekDays: h.weekDays ?? [],
         startDate:
           h.startDate ??
           (h.createdAt
@@ -58,7 +55,6 @@ export function useHabits() {
         createdAt: h.createdAt ?? new Date().toISOString(),
         updatedAt: h.updatedAt ?? undefined,
         userId: h.userId ?? undefined,
-        weekDays: h.frequency?.weekDays ?? undefined,
       }));
 
       const mappedHistory: HabitLog[] = data.flatMap((h) =>
@@ -80,8 +76,13 @@ export function useHabits() {
     void fetchAll();
   }, []);
 
-  async function addHabit(name: string, description?: string) {
-    const body = { name, description, frequency: "daily" };
+  async function addHabit(
+    name: string,
+    description?: string,
+    frequency: "daily" | "weekly" = "daily",
+    weekDays: number[] = [],
+  ) {
+    const body = { name, description, frequency, weekDays };
     const res = await apiFetch("/api/habits", {
       method: "POST",
       body: JSON.stringify(body),

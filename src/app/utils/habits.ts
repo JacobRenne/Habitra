@@ -19,19 +19,13 @@ export function splitHabitsByCompletionForDate(
   habits: Habit[],
   history: HabitLog[],
   date: string,
-): { incomplete: Habit[]; completed: Habit[] } {
+) {
   const completedIds = new Set(
-    history.filter((h) => h.date === date).map((h) => h.habitId),
+    history.filter((l) => l.date === date).map((l) => l.habitId),
   );
 
-  const incomplete: Habit[] = [];
-  const completed: Habit[] = [];
+  const completed = habits.filter((h) => completedIds.has(h.id));
+  const incomplete = habits.filter((h) => !completedIds.has(h.id));
 
-  for (const habit of habits) {
-    if (!isHabitActiveOnDate(habit, date)) continue;
-    if (completedIds.has(habit.id)) completed.push(habit);
-    else incomplete.push(habit);
-  }
-
-  return { incomplete, completed };
+  return { completed, incomplete };
 }

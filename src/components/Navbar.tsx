@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -20,6 +20,11 @@ function extractSession(result: unknown): Session | null {
     return anyResult as Session;
   }
   return null;
+}
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+  redirect("/account");
 }
 
 export function Navbar() {
@@ -68,49 +73,53 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className={cn(
-                navigationMenuTriggerStyle(),
-                "bg-transparent",
-                pathname === "/" && "bg-accent text-accent-foreground",
-              )}
-            >
-              Dashboard
-            </Link>
+            {session && (
+              <>
+                <Link
+                  href="/"
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    "bg-transparent",
+                    pathname === "/" && "bg-accent text-accent-foreground",
+                  )}
+                >
+                  Dashboard
+                </Link>
 
-            <Link
-              href="/planner"
-              className={cn(
-                navigationMenuTriggerStyle(),
-                "bg-transparent",
-                pathname === "/planner" && "bg-accent text-accent-foreground",
-              )}
-            >
-              Planner
-            </Link>
+                <Link
+                  href="/planner"
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    "bg-transparent",
+                    pathname === "/planner" &&
+                      "bg-accent text-accent-foreground",
+                  )}
+                >
+                  Planner
+                </Link>
+              </>
+            )}
 
             {!session ? (
-              <Link
-                href="/signup"
-                className={cn(
-                  navigationMenuTriggerStyle(),
-                  "bg-transparent",
-                  pathname === "/signup" && "bg-accent text-accent-foreground",
-                )}
-              >
-                Sign up
-              </Link>
-            ) : (
               <Link
                 href="/account"
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "bg-transparent",
                   pathname === "/account" && "bg-accent text-accent-foreground",
                 )}
               >
                 Account
+              </Link>
+            ) : (
+              <Link
+                href="/"
+                onClick={handleLogout}
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  "text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent",
+                )}
+              >
+                Log out
               </Link>
             )}
           </div>

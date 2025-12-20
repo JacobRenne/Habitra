@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function SignInForm() {
   const [email, setEmail] = useState("");
@@ -16,7 +26,7 @@ export function SignInForm() {
     setLoading(true);
     setMessage(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -28,42 +38,52 @@ export function SignInForm() {
       return;
     }
 
-    setMessage("Signed in");
+    setMessage("Signed in successfully");
     router.refresh();
+    redirect("/");
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <div>
-        <label className="block text-sm font-medium">Email</label>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-2 py-1"
-        />
-      </div>
+    <Card>
+      <div className="py-4">
+        <CardHeader>
+          <CardTitle>Sign in</CardTitle>
+          <CardDescription>
+            Welcome back. Enter your credentials to continue.
+          </CardDescription>
+        </CardHeader>
 
-      <div>
-        <label className="block text-sm font-medium">Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded border px-2 py-1"
-        />
-      </div>
+        <CardContent className="pt-2">
+          <form onSubmit={handleSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="signin-email">Email</Label>
+              <Input
+                id="signin-email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-      <div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-green-600 px-3 py-1 text-white"
-        >
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-      </div>
+            <div className="grid gap-2">
+              <Label htmlFor="signin-password">Password</Label>
+              <Input
+                id="signin-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-      {message && <div className="text-sm text-gray-700">{message}</div>}
-    </form>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
+
+            {message && (
+              <p className="text-muted-foreground text-sm">{message}</p>
+            )}
+          </form>
+        </CardContent>
+      </div>
+    </Card>
   );
 }

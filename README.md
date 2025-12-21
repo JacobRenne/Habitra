@@ -28,7 +28,7 @@ npm run cypress:component
 Github repo: https://github.com/JacobRenne/Habitra
 
 ### TDD
-Funktionen för vecko vanor utvecklades med TDD. Jag skrev ett test med cypress 
+Funktionen för vecko vanor utvecklades enligt TDD. Jag skrev ett test med cypress 
 förre att jag gjorde funktionen, jag behövde ändra testet lite då vecko funktionen
 krävde ändringar som ändrade alla test.
 

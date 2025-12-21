@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "cypress:component": "cypress open --component"
+    "cypress:component": "cypress run --component"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",

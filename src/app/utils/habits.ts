@@ -1,7 +1,7 @@
 import type { Habit, HabitLog } from "@/app/types/habit";
 
 export function isHabitActiveOnDate(habit: Habit, date: string): boolean {
-  const start = (habit.startDate ?? habit.createdAt?.slice(0, 10)) as string;
+  const start = habit.startDate ?? habit.createdAt?.slice(0, 10);
   return start <= date;
 }
 

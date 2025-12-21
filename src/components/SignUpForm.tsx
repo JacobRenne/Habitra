@@ -36,7 +36,7 @@ export function SignUpForm() {
       return;
     }
 
-    setMessage("Account created. Check your email to confirm if required.");
+    setMessage("Account created.");
   }
 
   return (

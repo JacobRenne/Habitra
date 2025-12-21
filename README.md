@@ -17,4 +17,24 @@ npm run preview – Production preview
 npm run cypress:open
   
 **Run all tests:**
+E2E:
 npm run cypress:run
+
+Component:
+npm run cypress:component
+
+## Kurskrav
+
+Github repo: https://github.com/JacobRenne/Habitra
+
+### TDD
+Funktionen för vecko vanor utvecklades med TDD. Jag skrev ett test med cypress 
+förre att jag gjorde funktionen, jag behövde ändra testet lite då vecko funktionen
+krävde ändringar som ändrade alla test.
+
+- Test för vecko vanor: https://github.com/JacobRenne/Habitra/commit/0a73b9304041dff2dd34c30d10eddffd33e597c3
+
+- Vecko funktionen: https://github.com/JacobRenne/Habitra/commit/9bcbbc56572c88ef9f5bf2e88f50a1fc1dc0dcb3
+
+### UML-diagram
+Ett diagram finns i source mappen för projektet med filnamnet: "uml-diagram-habit-toggle.png"

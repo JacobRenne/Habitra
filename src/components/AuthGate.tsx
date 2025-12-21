@@ -6,6 +6,11 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 
+// Interface for cypress check
+interface CypressWindow {
+  Cypress?: unknown;
+}
+
 export function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -13,7 +18,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Cypress bypass
-    if (typeof window !== "undefined" && (window as any).Cypress) {
+    if (typeof window !== "undefined" && (window as CypressWindow).Cypress) {
       setSession({} as Session);
       setLoading(false);
       return;
@@ -21,7 +26,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
     let active = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
       setSession(data.session ?? null);
       setLoading(false);

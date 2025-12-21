@@ -39,7 +39,7 @@ export function useHabits() {
         return;
       }
 
-      const data: ServerHabit[] = await res.json();
+      const data = (await res.json()) as ServerHabit[];
 
       const mappedHabits: HabitType[] = data.map((h) => ({
         id: h.id,
@@ -58,7 +58,7 @@ export function useHabits() {
       }));
 
       const mappedHistory: HabitLog[] = data.flatMap((h) =>
-        (h.logs || []).map((l) => ({ id: l.id, habitId: h.id, date: l.date })),
+        (h.logs ?? []).map((l) => ({ id: l.id, habitId: h.id, date: l.date })),
       );
 
       setHabits(mappedHabits);

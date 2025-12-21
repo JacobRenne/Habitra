@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -9,36 +9,27 @@ import { cn } from "@/lib/utils";
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import type { Session } from "@supabase/supabase-js";
 
-function extractSession(result: unknown): Session | null {
-  const anyResult: any = result;
-  const rawData = anyResult?.data;
-  if (rawData && typeof rawData === "object") {
-    if ("session" in rawData) return rawData.session as Session | null;
-    return rawData as Session | null;
-  }
-  if (anyResult && typeof anyResult === "object" && "user" in anyResult) {
-    return anyResult as Session;
-  }
-  return null;
-}
-
-async function handleLogout() {
-  await supabase.auth.signOut();
-  redirect("/account");
-}
-
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/account");
+    router.refresh();
+  };
 
   useEffect(() => {
     let mounted = true;
 
     async function init() {
       try {
-        const result = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
         if (!mounted) return;
-        setSession(extractSession(result));
+
+        setSession(data.session);
       } catch (err) {
         console.warn("Navbar getSession error", err);
         if (mounted) setSession(null);
@@ -46,18 +37,13 @@ export function Navbar() {
     }
     void init();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, state) => {
-      try {
-        setSession(extractSession(state));
-      } catch (e) {
-        console.warn("Navbar onAuthStateChange error", e);
-        setSession(null);
-      }
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
     });
 
     return () => {
       mounted = false;
-      sub?.subscription?.unsubscribe?.();
+      sub?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -111,16 +97,15 @@ export function Navbar() {
                 Account
               </Link>
             ) : (
-              <Link
-                href="/"
+              <button
                 onClick={handleLogout}
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent",
+                  "text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer bg-transparent",
                 )}
               >
                 Log out
-              </Link>
+              </button>
             )}
           </div>
 

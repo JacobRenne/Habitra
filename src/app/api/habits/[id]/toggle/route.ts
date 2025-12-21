@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserIdFromRequest } from "@/lib/getUserIdFromRequest";
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest, context: ContextLike) {
     return NextResponse.json({ error: "Missing habit id" }, { status: 400 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => ({}))) as { date: string };
   const date = body?.date as string | undefined;
   if (!date) {
     return NextResponse.json({ error: "Missing date" }, { status: 400 });

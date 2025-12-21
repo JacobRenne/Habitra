@@ -1,12 +1,3 @@
-export type DayOfWeek =
-  | "monday"
-  | "tuesday"
-  | "wednesday"
-  | "thursday"
-  | "friday"
-  | "saturday"
-  | "sunday";
-
 export type HabitFrequency = "daily" | "weekly";
 
 export interface Habit {

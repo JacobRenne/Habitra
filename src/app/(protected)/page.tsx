@@ -55,7 +55,9 @@ export default function HomePage() {
       <main className="container mx-auto max-w-2xl space-y-8 px-4 py-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Today's Focus</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Today&apos;s Focus
+            </h1>
             <p className="text-muted-foreground">
               Manage your habits for the selected day.
             </p>

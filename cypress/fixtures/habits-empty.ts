@@ -1,1 +1,1 @@
-export const habitsEmpty: any[] = [];
+export const habitsEmpty = [];

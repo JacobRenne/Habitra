@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardHeader,
@@ -40,7 +40,7 @@ export function SignInForm() {
 
     setMessage("Signed in successfully");
     router.refresh();
-    redirect("/");
+    router.push("/");
   }
 
   return (
@@ -74,7 +74,11 @@ export function SignInForm() {
               />
             </div>
 
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading}
+              data-testid={`sign-in-button`}
+            >
               {loading ? "Signing in..." : "Sign in"}
             </Button>
 

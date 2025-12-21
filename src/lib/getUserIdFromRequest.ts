@@ -16,7 +16,7 @@ export async function getUserIdFromRequest(
   req: NextRequest,
 ): Promise<string | null> {
   const auth = req.headers.get("authorization") ?? "";
-  const match = auth.match(/^Bearer (.+)$/);
+  const match = /^Bearer (.+)$/.exec(auth);
   const token = match ? match[1] : null;
 
   // Cypress auth bypass

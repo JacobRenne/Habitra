@@ -64,7 +64,7 @@ export default function PlannerPage() {
     }
   }
 
-  const toggleWeekDay = (index: any) => {
+  const toggleWeekDay = (index: number) => {
     const isAlreadySelected = weekDays.includes(index);
     const newWeekDays = isAlreadySelected
       ? weekDays.filter((d) => d !== index)

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserIdFromRequest } from "@/lib/getUserIdFromRequest";
+import type { Habit } from "@/app/types/habit";
 
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
+  const body = (await req.json()) as Habit;
   const {
     name,
     description,
